@@ -1,0 +1,36 @@
+/* Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+
+/* Main Background  */
+.main {
+    background-color: #f8f9fa;
+}
+
+/*  Global Center Alignment  */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Inter', sans-serif;
+    color: #1f2937;
+    text-align: center;
+}
+
+.stMarkdown p,
+.stMarkdown li {
+    text-align: center;
+}
+
+
+/*  Profile Image  */
+.profile-img {
+    border-radius: 50%;
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border: 3px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}

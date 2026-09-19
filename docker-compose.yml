@@ -1,0 +1,53 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ecommerce-growth-dashboard:latest
+
+    container_name: GrowthDashboard
+
+    working_dir: /workspace
+
+    ports:
+      - "8501:8501"
+
+    volumes:
+      # Mount the project so Python and Streamlit see edits immediately.
+      - .:/workspace
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+
+    command: >
+      streamlit run app.py
+      --server.address=0.0.0.0
+      --server.port=8501
+      --server.fileWatcherType=poll
+      --browser.gatherUsageStats=false
+
+    restart: unless-stopped
+
+  notebook:
+    image: ecommerce-growth-dashboard:latest
+    container_name: GrowthDashboardNotebook
+    working_dir: /workspace
+    depends_on:
+      - app
+    ports:
+      - "8888:8888"
+    volumes:
+      # Keep notebooks, modules, and datasets editable from the host.
+      - .:/workspace
+    environment:
+      PYTHONUNBUFFERED: "1"
+    command: >
+      jupyter lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --allow-root
+      --ServerApp.token=
+      --ServerApp.password=
+    restart: unless-stopped
