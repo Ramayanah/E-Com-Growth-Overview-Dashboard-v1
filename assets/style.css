@@ -34,3 +34,25 @@ h6 {
     border: 3px solid #e0e0e0;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
+/*  Header  */
+.main-header {
+    text-align: center;
+    padding: 1.5rem 0 1rem 0;
+    margin-bottom: 0.5rem;
+}
+
+.main-header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2563eb, #059669);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.3rem;
+}
+
+.main-header p {
+    color: #6b7280;
+    font-size: 1rem;
+    font-weight: 400;
+}
