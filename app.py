@@ -1,6 +1,8 @@
+
 import streamlit as st
 from modules.load_css import load_css
 from modules.load_image import img_to_base64
+from modules import uploader
 
 load_css("assets/style.css")
 
@@ -33,5 +35,42 @@ with st.sidebar:
     )
 
     st.divider()
+
+
+    # File Uploader
+    st.markdown("### 📁 Data Source")
+    uploaded_file = st.file_uploader(
+        "Upload CSV or Excel",
+        type=["csv", "xlsx"],
+        help="Upload an e-commerce dataset with columns like date, order_id, "
+             "customer_id, revenue. If no file is uploaded, sample data is used.",
+
+    )
+
+
+    st.divider()
+
+    # Data source status
+    df = None
+    data_source = ""
+
+    if uploaded_file is not None:
+        df, status_msg = uploader.parse_file(uploaded_file)
+        if df is not None:
+            data_source = "uploaded"
+            st.success("📁 **Using Uploaded Dataset**")
+            st.caption(status_msg)
+    #     else:
+    #         st.error(status_msg)
+    #         df = sample_data.generate()
+    #         data_source = "sample"
+    #         st.info("📊 Falling back to Sample Dataset")
+    # else:
+    #     df = sample_data.generate()
+    #     data_source = "sample"
+    #     st.info("📊 **Using Sample Dataset**")
+    #     st.caption("Upload a file above to analyze your own data.")
+
+
 
 
