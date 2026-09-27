@@ -4,12 +4,14 @@ from modules.load_css import load_css
 from modules.load_image import img_to_base64
 from modules import uploader
 import sample_data
+from modules import schema_detection
+
 
 load_css("assets/style.css")
 
 #  Page Config 
 st.set_page_config(
-    page_title="E-Commerce Growth Dashboard",
+    page_title="E-Commerce Growth Overview Dashboard",
     page_icon="",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -76,8 +78,8 @@ with st.sidebar:
 #  Main Area: Header 
 st.markdown(
     '<div class="main-header">'
-    '<h1>🚀 E-Commerce Growth Intelligence Tool By Ramah</h1>'
-    '<p>Analytics for growth diagnostics, unit economics, and investor readiness</p>'
+    '<h1>🚀 E-Commerce Growth Overview Intelligence Tool By Ramah</h1>'
+    '<h3>Analytics for growth Overview diagnostics</h3>'
     '</div>',
     unsafe_allow_html=True,
 )
@@ -87,4 +89,21 @@ st.markdown(
 with st.expander("👀 Data Preview", expanded=False):
     st.dataframe(df.head(100), width="stretch", height=300)
     st.caption(f"Showing first {min(100, len(df))} rows of {len(df):,} total rows")
+
+#  Schema Detection 
+mapped_df, mapping, missing_required = schema_detection.detect_and_map(df)
+
+mapping_report = schema_detection.format_mapping_report(mapping, missing_required)
+with st.expander("🗺️ Column Mapping Summary", expanded=False):
+    for line in mapping_report["summary"]:
+        st.markdown(line)
+    st.caption(f"Total columns mapped: {mapping_report['total_mapped']}")
+
+if missing_required:
+    st.error(
+        f"❌ **Missing required columns:** {', '.join(missing_required)}\n\n"
+        f"Your dataset must have columns that match: `date`, `order_id`, `customer_id`, `revenue`. "
+        f"Please check your column names and re-upload."
+    )
+    st.stop()
 
