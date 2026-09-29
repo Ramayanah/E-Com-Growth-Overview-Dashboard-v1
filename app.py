@@ -5,6 +5,8 @@ from modules.load_image import img_to_base64
 from modules import uploader
 import sample_data
 from modules import schema_detection
+from modules import data_cleaning
+
 
 
 load_css("assets/style.css")
@@ -105,5 +107,21 @@ if missing_required:
         f"Your dataset must have columns that match: `date`, `order_id`, `customer_id`, `revenue`. "
         f"Please check your column names and re-upload."
     )
+    st.stop()
+
+
+#  Data Cleaning 
+clean_df, cleaning_report = data_cleaning.clean(mapped_df)
+
+cleaning_messages = data_cleaning.format_cleaning_report(cleaning_report)
+with st.expander("🧹 Data Cleaning Report", expanded=False):
+    for msg in cleaning_messages:
+        st.markdown(msg)
+
+if len(clean_df) < 5:
+    st.warning("⚠️ **Very small dataset** — results may not be meaningful with fewer than 5 rows.")
+
+if clean_df.empty:
+    st.error("❌ No valid data remaining after cleaning. Please check your dataset.")
     st.stop()
 
