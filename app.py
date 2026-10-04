@@ -3,13 +3,29 @@ import streamlit as st
 from modules.load_css import load_css
 from modules.load_image import img_to_base64
 from modules import uploader
+from modules.growth_analysis import aggregate_growth, build_growth_insight
+from modules.visualization import (
+    aov_trend_chart,
+    orders_trend_chart,
+    revenue_trend_chart,
+    revenue_vs_orders_chart,
+)
 import sample_data
 from modules import schema_detection
 from modules import data_cleaning
 
 
+def format_currency(value):
+    if abs(value) >= 1_000_000:
+        return f"₹{value / 1_000_000:,.1f}M"
+    if abs(value) >= 1_000:
+        return f"₹{value / 1_000:,.1f}K"
+    return f"₹{value:,.2f}"
 
-load_css("assets/style.css")
+
+def format_growth(value):
+    return "N/A" if value is None else f"{value:+.1f}%"
+
 
 #  Page Config 
 st.set_page_config(
@@ -18,6 +34,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+load_css("assets/style.css")
 
 # Sidebar image and profile information
 
@@ -89,7 +107,7 @@ st.markdown(
 
 #  Data Preview 
 with st.expander("👀 Data Preview", expanded=False):
-    st.dataframe(df.head(100), width="stretch", height=300)
+    st.dataframe(df.head(100), use_container_width=True, height=300)
     st.caption(f"Showing first {min(100, len(df))} rows of {len(df):,} total rows")
 
 #  Schema Detection 
@@ -125,3 +143,69 @@ if clean_df.empty:
     st.error("❌ No valid data remaining after cleaning. Please check your dataset.")
     st.stop()
 
+st.markdown("## Growth Overview")
+granularity = st.selectbox(
+    "Trend interval",
+    options=["Daily", "Weekly", "Monthly", "Quarterly"],
+    index=2,
+    help="Growth KPIs compare the latest represented interval with the previous interval.",
+)
+
+try:
+    analysis = aggregate_growth(clean_df, granularity)
+except ValueError as error:
+    st.error(str(error))
+    st.stop()
+
+st.caption(
+    f"Latest interval: **{analysis['latest_period_label']}**"
+    f" · Compared with: **{analysis['previous_period_label'] or 'not available'}**"
+)
+if analysis["excluded_rows"]:
+    st.caption(
+        f"{analysis['excluded_rows']:,} rows without a valid date, order ID, or revenue "
+        "were excluded from growth metrics."
+    )
+
+latest = analysis["latest"]
+growth = analysis["growth"]
+kpi_columns = st.columns(4)
+kpi_columns[0].metric(
+    "Revenue",
+    format_currency(latest["revenue"]),
+    format_growth(growth["revenue"]),
+)
+kpi_columns[1].metric(
+    "Orders",
+    f"{latest['orders']:,.0f}",
+    format_growth(growth["orders"]),
+)
+kpi_columns[2].metric(
+    "Unique Customers",
+    f"{latest['customers']:,.0f}",
+    format_growth(growth["customers"]),
+)
+kpi_columns[3].metric(
+    "Average Order Value",
+    format_currency(latest["aov"]) if latest["orders"] else "N/A",
+    format_growth(growth["aov"]),
+)
+
+revenue_column, orders_column = st.columns(2)
+with revenue_column:
+    st.plotly_chart(revenue_trend_chart(analysis), use_container_width=True, config={"displayModeBar": False})
+with orders_column:
+    st.plotly_chart(orders_trend_chart(analysis), use_container_width=True, config={"displayModeBar": False})
+
+comparison_column, aov_column = st.columns(2)
+with comparison_column:
+    st.plotly_chart(
+        revenue_vs_orders_chart(analysis),
+        use_container_width=True,
+        config={"displayModeBar": False},
+    )
+with aov_column:
+    st.plotly_chart(aov_trend_chart(analysis), use_container_width=True, config={"displayModeBar": False})
+
+st.markdown("### Growth Summary")
+st.info(build_growth_insight(analysis))
