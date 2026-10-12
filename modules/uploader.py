@@ -30,8 +30,10 @@ def parse_file(uploaded_file):
         # Parse based on extension
         if file_name.endswith(".csv"):
             df = _parse_csv(raw_bytes)
-        elif file_name.endswith(".xlsx") or file_name.endswith(".xls"):
-            df = _parse_excel(raw_bytes)
+        elif file_name.endswith(".xlsx") or file_name.endswith(".xlsm"):
+            df = _parse_excel(raw_bytes, prefer="openpyxl")
+        elif file_name.endswith(".xls"):
+            df = _parse_excel(raw_bytes, prefer="xlrd")
         else:
             return None, "⚠️ Unsupported file format. Please upload a .csv or .xlsx file."
 
@@ -67,7 +69,20 @@ def _parse_csv(raw_bytes):
     return df
 
 
-def _parse_excel(raw_bytes):
-    """Parse Excel bytes."""
-    df = pd.read_excel(io.BytesIO(raw_bytes), engine="openpyxl")
-    return df
+def _parse_excel(raw_bytes, prefer="openpyxl"):
+    """Parse Excel bytes using the engine that matches the workbook type."""
+    engines = [prefer]
+    if prefer == "openpyxl":
+        engines.extend(["calamine", "xlrd"])
+    else:
+        engines.extend(["openpyxl", "calamine"])
+
+    last_error = None
+    for engine in engines:
+        try:
+            return pd.read_excel(io.BytesIO(raw_bytes), engine=engine)
+        except (ValueError, ImportError, TypeError) as exc:
+            last_error = exc
+            continue
+
+    raise ValueError(f"Unable to read Excel file with supported engines: {last_error}")

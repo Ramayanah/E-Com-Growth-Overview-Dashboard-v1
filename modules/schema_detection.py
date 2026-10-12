@@ -29,7 +29,7 @@ def detect_and_map(df):
     Returns:
         tuple:
             mapped_df: DataFrame with standardized column names.
-            mapping_report: dict mapping standard names to source names.
+            mapping: dict mapping standard names to source names.
             missing_required: list of required columns not found.
     """
     if not isinstance(df, pd.DataFrame):
@@ -97,15 +97,7 @@ def detect_and_map(df):
         if column not in mapping
     ]
 
-    # --------------------------------------------------------
-    # Step 6: Create detailed report
-    # --------------------------------------------------------
-    report = format_mapping_report(
-        mapping=mapping,
-        missing_required=missing_required,
-    )
-
-    return df, report, missing_required
+    return df, mapping, missing_required
 
 
 def format_mapping_report(mapping, missing_required):
