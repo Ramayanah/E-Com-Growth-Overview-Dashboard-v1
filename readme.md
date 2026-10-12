@@ -141,7 +141,7 @@ The app can also map common aliases automatically, such as `order_number`, `purc
 4. Select a trend interval: Daily, Weekly, Monthly, or Quarterly.
 5. Explore KPIs and charts for business growth insights.
 
-## Run on Streamlit Community Cloud
+## Run on Browser but it can take some time
 
 https://overviewecom.streamlit.app/
 
